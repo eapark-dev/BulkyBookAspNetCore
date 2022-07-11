@@ -1,5 +1,6 @@
-﻿using BulkyBookWeb.Data;
-using BulkyBookWeb.Models;
+﻿using BulkyBook.DataAccess;
+using BulkyBook.DataAccess.Data;
+using BulkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyBookWeb.Controllers
@@ -52,14 +53,14 @@ namespace BulkyBookWeb.Controllers
             if(id == null || id == 0)
                 return NotFound();
 
-            var categoryFromDb = _db.Categories.Find(id);
-            //var categoryFromDbFirst = _db.Categories.FirstOrDefault(u => u.Id == id);
+            //var categoryFromDb = _db.Categories.Find(id);
+            var categoryFromDbFirst = _db.Categories.FirstOrDefault(u => u.Name == "id");
             //var categoryFromDbSingle = _db.Categories.FirstOrDefault(u => u.Id == id);
 
-            if(categoryFromDb == null)
+            if(categoryFromDbFirst == null)
                 return NotFound();
 
-            return View(categoryFromDb);
+            return View(categoryFromDbFirst);
         }
 
         //POST
