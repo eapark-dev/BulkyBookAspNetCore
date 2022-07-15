@@ -44,7 +44,7 @@ public class ProductController : Controller
             //일부 데이터를 불러올 때 사용 ViewBag
             //자동으로 변수형을 유추
             ViewBag.CategoryList = CategoryList;
-            ViewBag.CoverTypeList = CoverTypeList;
+            ViewData["CoverTypeList"] = CoverTypeList;
             return View(product);
         }
         else
