@@ -13,10 +13,12 @@ namespace BulkyBookWeb.Controllers;
 public class ProductController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IWebHostEnvironment _hostEnvironment;
 
-    public ProductController(IUnitOfWork unitOfWork)
+    public ProductController(IUnitOfWork unitOfWork , IWebHostEnvironment hostEnvironment)
     {
         _unitOfWork = unitOfWork;
+        _hostEnvironment = hostEnvironment;
     }
 
     public IActionResult Index()
@@ -32,8 +34,8 @@ public class ProductController : Controller
         {
             Product = new(),
             CategoryList = _unitOfWork.Category.GetAll().Select(i=> new SelectListItem { 
-            Text = i.Name,
-            Value = i.Id.ToString()
+                Text = i.Name,
+                Value = i.Id.ToString()
             }),
             CoverTypeList = _unitOfWork.CoverType.GetAll().Select(i => new SelectListItem
             {
@@ -59,13 +61,27 @@ public class ProductController : Controller
     //POST
     [HttpPost]
     [ValidateAntiForgeryToken] //XSRf/CSRF 공격 방지용
-    public IActionResult Upsert(ProductVM obj, IFormFile file)
+    public IActionResult Upsert(ProductVM obj, IFormFile? file)
     {
         //정확한 데이터가 들어왔는 지 체크 
         if (ModelState.IsValid)
         {
-            //_unitOfWork.Product.Update(obj);
+            string wwwRootPath = _hostEnvironment.WebRootPath;
+            if (file != null) {
+                string fileName = Guid.NewGuid().ToString();
+                var uploads = Path.Combine(wwwRootPath, @"images\products");
+                var extension = Path.GetExtension(file.FileName);
+
+                using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create)) 
+                {
+                    file.CopyTo(fileStreams);
+                }
+                obj.Product.ImageUrl = @"\images\products\" + fileName + extension;
+            }
+
+            _unitOfWork.Product.Update(obj.Product);
             _unitOfWork.Save();
+            TempData["success"] = "Product created successfully";
             return RedirectToAction("Index");
         }
         return View(obj);
